@@ -1,31 +1,21 @@
-/**
- * Author: Simon Lindholm
- * Date: 2016-10-08
- * License: CC0
- * Source: me
- * Description: Segment tree with ability to add or set values of large intervals, and compute max of intervals.
- * Can be changed to other things.
- * Use with a bump allocator for better performance, and SmallPtr or implicit indices to save memory.
- * Time: O(\log N).
- * Usage: Node* tr = new Node(v, 0, sz(v));
- * Status: fuzz-tested a bit
- *
- * Author: landcold7
- * Change Date: 2019-01-01
- * Add: extend this struct with support for sum of a larger interval.
- * Usage: change LOW UPDATE and f for chosing sum of a interval
- *        or maximum of a interval
- */
-#pragma once
+#include <bits/stdc++.h>
+using namespace std;
 
-#include "../various/BumpAllocator.h"
+#define rep(i, a, b) for(int i = a; i < int(b); ++i)
+#define trav(a, v) for(auto& a : v)
+#define all(x) x.begin(), x.end()
+#define sz(x) (int)(x).size()
 
+typedef long long ll;
+typedef pair<int, int> pii;
+typedef vector<int> vi;
+
+#include "../content/various/BumpAllocator.h"
 struct Node {
     typedef int T;
-    static const T LOW = 0;
-    #define UPDATE ((hi - lo) * x)
-    // #define UPDATE (x)
-    T f(T a, T b) { return (a + b); }
+    static const T LOW = numeric_limits<T>::min();
+    #define UPDATE (x)
+    T f(T a, T b) { return max(a, b); }
 
     Node *l = 0, *r = 0;
     int lo, hi;
@@ -82,3 +72,46 @@ struct Node {
         }
     }
 };
+
+static unsigned R;
+int ra() {
+    R *= 791231;
+    R += 1231;
+    return (int)(R >> 1);
+}
+
+volatile int res;
+int main() {
+    int N = 10;
+    vi v(N);
+    iota(all(v), 0);
+    random_shuffle(all(v), [](int x) { return ra() % x; });
+    Node* tr = new Node(v,0,N);
+    rep(i,0,N) rep(j,0,N) if (i <= j) {
+        int ma = numeric_limits<int>::min();
+        rep(k,i,j) ma = max(ma, v[k]);
+        assert(ma == tr->query(i,j));
+    }
+    rep(it,0,1000000) {
+        int i = ra() % (N+1), j = ra() % (N+1);
+        if (i > j) swap(i, j);
+        int x = (ra() % 10) - 5;
+
+        int r = ra() % 100;
+        if (r < 30) {
+            ::res = tr->query(i, j);
+            int ma = numeric_limits<int>::min();
+            rep(k,i,j) ma = max(ma, v[k]);
+            assert(ma == ::res);
+        }
+        else if (r < 70) {
+            tr->add(i, j, x);
+            rep(k,i,j) v[k] += x;
+        }
+        else {
+            tr->set(i, j, x);
+            rep(k,i,j) v[k] = x;
+        }
+    }
+    exit(0);
+}
