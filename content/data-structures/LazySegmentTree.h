@@ -10,11 +10,6 @@
  * Usage: Node* tr = new Node(v, 0, sz(v));
  * Status: fuzz-tested a bit
  *
- * Author: landcold7
- * Change Date: 2019-01-01
- * Add: extend this struct with support for sum of a larger interval.
- * Usage: change LOW UPDATE and f for chosing sum of a interval
- *        or maximum of a interval
  */
 #pragma once
 
@@ -31,6 +26,7 @@ struct Node {
     int lo, hi;
     T mset = -1, madd = 0, val = LOW;
     Node(int lo, int hi) : lo(lo), hi(hi) {}
+    ~Node() { delete l; delete r; }
     Node(vector<T>& v, int lo, int hi) : lo(lo), hi(hi) {
         if (lo + 1 < hi) {
             int mid = lo + (hi - lo) / 2;
